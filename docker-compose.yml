@@ -1,0 +1,115 @@
+
+# docker-compose up -d
+version: '3' # version của docker-compose
+ # định nghĩa đóng gói image và khởi tạo container cho các source
+services:
+  api_gateway:
+    container_name: api-gateway
+    # image: img-react1
+    build: ./api-gateway 
+    ports:
+      - "8080:8080"
+    networks:
+      - node-network
+
+  auth:
+    container_name: service_auth
+    build: ./auth 
+    networks:
+      - node-network
+  
+  order:
+    container_name: service_order
+    build: ./order 
+    networks:
+      - node-network
+  
+  restaurant:
+    container_name: service_restaurant
+    build: ./restaurant 
+    networks:
+      - node-network
+
+  shipping:
+    container_name: service_shipping
+    build: ./shipping 
+    networks:
+      - node-network
+  user:
+    container_name: service_user
+    build: ./user 
+    networks:
+      - node-network
+  send_email:
+    container_name: service-email
+    build: ./send-email 
+    networks:
+      - node-network
+  redis:
+    image: redis:latest
+    container_name: some-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - node-network
+  postgres:
+    image: postgres:latest
+    container_name: some-postgres
+   
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: db-food
+    ports:
+      - "5432:5432"
+    networks:
+      - node-network
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: some-rabbit
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 1234
+    
+    ports:
+      - "5672:5672"   # Cổng AMQP cho microservices
+      - "15672:15672" # Cổng UI quản lý RabbitMQ
+    networks:
+      - node-network
+  elasticsearch:
+    image: elasticsearch:8.15.0
+    container_name: elasticsearch
+   
+  
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - node-network
+  kibana:
+    image: kibana:8.15.0
+    container_name: kibana
+  
+    ports:
+      - "5601:5601"
+    networks:
+      - node-network
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    image: boyreact2404/logstash:latest
+    container_name: logstash
+   
+    ports:
+      - "5044:5044" 
+      - "9600:9600"
+    networks:
+      - node-network
+    depends_on:
+      - elasticsearch
+    
+networks:
+  node-network:
+    external: true 

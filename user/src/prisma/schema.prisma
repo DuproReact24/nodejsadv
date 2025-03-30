@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model categorys {
+  id      Int    @id @default(autoincrement())
+  name    String @db.VarChar(255)
+  id_menu Int
+  menu    menu   @relation(fields: [id_menu], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_categorys_user")
+}
+
+model customer {
+  id      Int      @id @default(autoincrement())
+  name    String   @db.VarChar(255)
+  address String?
+  age     Int?
+  phone   String?  @unique @db.VarChar(20)
+  email   String?  @unique @db.VarChar(120)
+  id_user Int      @unique
+  users   users    @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_customer_user")
+  orders  orders[]
+}
+
+model foods {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  price        Float
+  description  String?
+  image        String?
+  id_cate      Int
+  detail_order detail_order[]
+  menu         menu           @relation(fields: [id_cate], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_food_user")
+}
+
+model menu {
+  id          Int         @id @default(autoincrement())
+  name        String      @db.VarChar(255)
+  id_res      Int
+  categorys   categorys[]
+  foods       foods[]
+  restaurants restaurants @relation(fields: [id_res], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_menu_user")
+}
+
+model orders {
+  id           Int            @id @default(autoincrement())
+  date         DateTime?      @default(now()) @db.Timestamp(6)
+  trangthai    String         @db.VarChar(50)
+  id_customer  Int
+  detail_order detail_order[]
+  customer     customer       @relation(fields: [id_customer], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_order_user")
+}
+
+model owner_restaurants {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
+  address     String?
+  age         Int?
+  phone       String?       @unique @db.VarChar(20)
+  email       String?       @unique @db.VarChar(120)
+  id_user     Int           @unique
+  users       users         @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_customer_user")
+  restaurants restaurants[]
+}
+
+model restaurants {
+  id       Int               @id @default(autoincrement())
+  name     String            @db.VarChar(255)
+  address  String
+  phone    String            @db.VarChar(20)
+  email    String?           @db.VarChar(120)
+  id_owner Int
+  image    String?
+  menu     menu[]
+  customer owner_restaurants @relation(fields: [id_owner], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_restaurants_user")
+}
+
+model users {
+  id                Int                @id @default(autoincrement())
+  taikhoan          String             @unique @db.VarChar(120)
+  matkhau           String
+  customer          customer?
+  owner_restaurants owner_restaurants?
+}
+
+model detail_order {
+  id_order Int
+  id_food  Int
+  price    Float
+  soluong  Int
+  foods    foods  @relation(fields: [id_food], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ct_food_user")
+  orders   orders @relation(fields: [id_order], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ct_orders_user")
+
+  @@id([id_order, id_food])
+}
+
+model shipping {
+  id          Int       @id @default(autoincrement())
+  date        DateTime? @default(now()) @db.Timestamp(6)
+  trangthai   String?
+  id_customer Int?
+}
